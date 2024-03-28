@@ -28,6 +28,7 @@ class Node:
         self.x = x
         self.y = y
         self.color = WHITE
+        self.neighbors = []
     def draw(self,win):
         pygame.draw.rect(win, self.color, (self.x*GAP, self.y*GAP, GAP, GAP))
 
@@ -48,8 +49,10 @@ def make_border(win, array, rows, columns):
         # text = font.render("8", True, RED)                điền số cho tọa độ mà đ chạy đc
         # win.blit(text, (i*GAP, 0))
         array[i][0].color = GRAY
+        array[i][rows-1].color = GRAY
     for i in range(rows):
         array[0][i].color = GRAY
+        array[columns-1][i].color = GRAY
 
 # Vẽ lưới
 def draw_grid(win, rows, columns):
@@ -78,7 +81,7 @@ def main(win):
     columns = COLUMNS
     array = make_array(rows, columns)
     make_border(win, array, rows, columns)
-
+    
     array[1][2].color = RED # Điểm bắt đầu
     array[29][17].color = AQUA # Điểm kết thúc
 
