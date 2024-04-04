@@ -19,8 +19,9 @@ BLACK = (0,0,0)
 GRAY = (128,128,128)    # Chướng ngại vật
 RED = (255,0,0)         # Điểm bắt đầu
 GREEN = (0,255,0)       # Điểm kết thúc
-AQUA = (0,255,255)      # Đường đã đi
+AQUA = (0,255,255)      # Đường mở rộng 
 YELLOW = (255,255,0)    # Đường tìm được
+AQUA_DARK = (0, 200, 200) # Màu đường đã đi
 
 # Tạo class Node là các ô vuông trong mê cung
 class Node:
@@ -36,15 +37,13 @@ class Node:
         if (self.color != GRAY):
             if grid[self.x+1][self.y].color != GRAY:
                 self.neighbors.append(grid[self.x+1][self.y])   # Thêm node bên phải vào neighbors
-
             if grid[self.x-1][self.y].color != GRAY:
                 self.neighbors.append(grid[self.x-1][self.y])  # Thêm node bên trái vào neighbors
-
+            if grid[self.x][self.y-1].color != GRAY:
+                self.neighbors.append(grid[self.x][self.y-1])   # Thêm node bên trên vào neighbors
             if grid[self.x][self.y+1].color != GRAY:
                 self.neighbors.append(grid[self.x][self.y+1])   # Thêm node bên dưới vào neighbors
 
-            if grid[self.x][self.y-1].color != GRAY:
-                self.neighbors.append(grid[self.x][self.y-1])   # Thêm node bên trên vào neighbors
 
 # Tạo mảng 2 chiều gồm các node
 def make_array(rows, columns):      
@@ -101,6 +100,32 @@ def rebuild_path(prevNode, start, end, draw):
         curNode.color = YELLOW
         draw()
 
+# Thuật toán nối hai đỉnh
+def bresenham_line(matrix, x0, y0, x1, y1):
+    dx = abs(x1 - x0)
+    dy = abs(y1 - y0)
+    sx = 1 if x0 < x1 else -1
+    sy = 1 if y0 < y1 else -1
+    err = dx - dy
+
+    while x0 != x1 or y0 != y1:
+        matrix[y0][x0].color = GRAY
+        e2 = 2 * err
+        if e2 > -dy:
+            err -= dy
+            x0 += sx
+        if e2 < dx:
+            err += dx
+            y0 += sy
+    matrix[y0][x0].color = GRAY
+
+def add_obstacle(matrix, obstacles):
+    for array in obstacles:
+        for i in range(len(array) - 1):
+            x0, y0 = array[i]
+            x1, y1 = array[i + 1]
+            bresenham_line(matrix, x0, y0, x1, y1)
+
 def a_star_algorithm(draw, grid, start, end):
     f_distance = {}
     g_distance = {}
@@ -111,6 +136,7 @@ def a_star_algorithm(draw, grid, start, end):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
+                
         curNode = min(f_distance, key=f_distance.get)
         if f_distance[curNode] == float('inf'):
             print("Không tìm thấy đường đi")
@@ -129,6 +155,70 @@ def a_star_algorithm(draw, grid, start, end):
                 if (neighbor.color != RED and neighbor.color != GREEN):
                     neighbor.color = AQUA
         draw()
+
+def a_star_algorithm_2(draw, grid, start, end):
+    f_distance = {}
+    g_distance = {}
+    prevNode = {}
+    g_distance[start] = 0
+    f_distance[start] = 0 + h(start, end)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                
+        curNode = min(f_distance, key=f_distance.get)
+        
+        if f_distance[curNode] == float('inf'):
+            print("Không tìm thấy đường đi")
+            return False
+        if curNode == end:
+            rebuild_path(prevNode, start, end, draw)
+            return True
+        g_distance_temp = g_distance[curNode] + 1
+        g_distance[curNode] = float('inf')
+        f_distance[curNode] = float('inf')
+        if (curNode.color != RED and curNode.color != GREEN):
+            curNode.color = AQUA_DARK
+        for neighbor in curNode.neighbors:
+            if neighbor not in g_distance: # or g_distance[neighbor] < g_distance_temp:
+                prevNode[neighbor] = curNode
+                g_distance[neighbor] = g_distance_temp
+                f_distance[neighbor] = g_distance_temp + h(neighbor, end)
+                if (neighbor.color != RED and neighbor.color != GREEN):
+                    neighbor.color = AQUA
+        pygame.time.delay(100)
+        draw()
+        
+def greedy_bfs_algorithm(draw, grid, start, end):
+    open = {}
+    prevNode = {}
+    open[start] = h(start, end)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+        curNode = min(open, key=open.get)
+        if open[curNode] == float('inf'):
+            print("Không tìm thấy đường đi")
+            return False
+        if curNode == end:
+            rebuild_path(prevNode, start, end, draw)
+            return True
+        distance_temp = open[curNode]
+        open[curNode] = float('inf')
+        if (curNode.color != RED and curNode.color != GREEN):
+            curNode.color = AQUA_DARK
+            
+        for neighbor in curNode.neighbors or open[neighbor] <= distance_temp:
+            if neighbor not in prevNode:
+                prevNode[neighbor] = curNode
+                open[neighbor] = h(neighbor, end)
+                if (neighbor.color != RED and neighbor.color != GREEN):
+                    neighbor.color = AQUA
+                
+        pygame.time.delay(100)
+        draw()
         
 def main(win):
     rows = ROWS
@@ -140,7 +230,17 @@ def main(win):
         array[10][i].color = GRAY
     for i in range(6, 19):
         array[20][i].color = GRAY
-
+    for i in range(3, 10):
+        array[i][8].color = GRAY
+    for i in range(14, 20):
+        array[i][6].color = GRAY
+    for i in range(6, 16):
+        array[3][i].color = GRAY
+    
+    # Add obstacle
+    obstacles = [[(2, 20), (10, 21), (6, 29), (2, 20)], [(10, 10), (14, 10), (15, 17), (10, 10)]]
+    add_obstacle(array, obstacles)
+    
     for row in array:
         for node in row:
             node.updateNeighbor(array)
@@ -149,9 +249,9 @@ def main(win):
     end = array[29][16]
     start.color = RED
     end.color = GREEN
-
+    
     draw(win, array, rows, columns)
-    a_star_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
+    greedy_bfs_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
     run = True
     while run:
         for event in pygame.event.get():
