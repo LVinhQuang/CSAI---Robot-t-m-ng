@@ -96,10 +96,13 @@ def h(node1, node2):
 # Hàm vẽ đường ngắn nhất sau khi tìm ra
 def rebuild_path(prevNode, start, end, draw):
     curNode = end
+    weight = 1
     while prevNode[curNode] != start:
         curNode = prevNode[curNode]
+        weight += 1
         curNode.color = YELLOW
         draw()
+    return weight
 
 def a_star_algorithm(draw, grid, start, end):
     f_distance = {}
@@ -116,7 +119,8 @@ def a_star_algorithm(draw, grid, start, end):
             print("Không tìm thấy đường đi")
             return False
         if curNode == end:
-            rebuild_path(prevNode, start, end, draw)
+            weight = rebuild_path(prevNode, start, end, draw)
+            print("Đường đi tìm được có chiều dài là: ", weight)
             return True
         g_distance_temp = g_distance[curNode] + 1
         g_distance[curNode] = float('inf')
@@ -136,10 +140,12 @@ def main(win):
     array = make_array(rows, columns)
     make_border(win, array, rows, columns)
 
-    for i in range(1, 14):
+    for i in range(1, 18):
         array[10][i].color = GRAY
-    for i in range(6, 19):
+    for i in range(2, 19):
         array[20][i].color = GRAY
+    for i in range(2, 19):
+        array[18][i].color = GRAY
 
     for row in array:
         for node in row:
