@@ -5,12 +5,12 @@ import pygame
 from queue import PriorityQueue
 pygame.init()
 
-ROWS = 20
-COLUMNS = 35
+ROWS = 0
+COLUMNS = 0
 GAP = 20
 WIDTH = COLUMNS * GAP
 HEIGHT = ROWS * GAP
-WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+WIN = 0
 pygame.display.set_caption("FIDING PATH")
 
 # Hằng số màu
@@ -44,7 +44,18 @@ class Node:
             if grid[self.x][self.y+1].color != GRAY:
                 self.neighbors.append(grid[self.x][self.y+1])   # Thêm node bên dưới vào neighbors
 
+# read input file
+def read_input_file(file_name):
+    with open(file_name, 'r') as f:
+        lines = f.readlines()
+        global COLUMNS, ROWS, GAP, WIDTH, HEIGHT, WIN
+        COLUMNS, ROWS = map(int, lines[0].split(','))
+        GAP = 20
+        WIDTH = COLUMNS * GAP
+        HEIGHT = ROWS * GAP
+        WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 
+        
 # Tạo mảng 2 chiều gồm các node
 def make_array(rows, columns):      
     grid = []
@@ -216,8 +227,7 @@ def greedy_bfs_algorithm(draw, grid, start, end):
                 open[neighbor] = h(neighbor, end)
                 if (neighbor.color != RED and neighbor.color != GREEN):
                     neighbor.color = AQUA
-                
-        pygame.time.delay(100)
+        pygame.time.delay(5)
         draw()
 
 def dijkstra_algorithm(draw, grid, start, end):
@@ -279,7 +289,7 @@ def main(win):
     end.color = GREEN
     
     draw(win, array, rows, columns)
-    dijkstra_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
+    greedy_bfs_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
     run = True
     while run:
         for event in pygame.event.get():
@@ -287,4 +297,5 @@ def main(win):
                 run = False
     pygame.quit()
 
+read_input_file('input.txt')
 main(WIN)
