@@ -13,6 +13,8 @@ HEIGHT = ROWS * GAP
 START = [0, 0]
 END = [0, 0]
 POINTS = []
+OBSTACLE_COUNT = 0
+OBSTACLES = []
 WIN = 0
 pygame.display.set_caption("FIDING PATH")
 
@@ -65,10 +67,15 @@ def read_input_file(file_name):
         START = list(map(int, lines[1].split(',')[0:2]))
         END = list(map(int, lines[1].split(',')[2:4]))
         POINTS = [list(map(int, lines[1].split(',')[i:i+2])) for i in range(4, len(lines[1].split(',')), 2)]
-        
-        
+     
+        # số lượng obstacle
+        global OBSTACLE_COUNT
+        OBSTACLE_COUNT = int(lines[2])
 
-
+        # tọa độ các đỉnh của các obstacle
+        global OBSTACLES
+        for j in range(3, 3 + OBSTACLE_COUNT):
+            OBSTACLES.append([list(map(int, lines[j].split(',')[i:i+2])) for i in range(0, len(lines[j].split(',')), 2)])
         
 # Tạo mảng 2 chiều gồm các node
 def make_array(rows, columns):      
@@ -150,6 +157,10 @@ def add_obstacle(matrix, obstacles):
             x0, y0 = array[i]
             x1, y1 = array[i + 1]
             bresenham_line(matrix, x0, y0, x1, y1)
+        # nối đỉnh đầu và cuối
+        x0, y0 = array[len(array) - 1]
+        x1, y1 = array[1]
+        bresenham_line(matrix, x0, y0, x1, y1)
 
 def a_star_algorithm(draw, grid, start, end):
     f_distance = {}
@@ -278,24 +289,23 @@ def main(win):
     array = make_array(rows, columns)
     make_border(win, array, rows, columns)
 
-    # for i in range(1, 14):
-    #     array[10][i].color = GRAY
-    # for i in range(6, 19):
-    #     array[20][i].color = GRAY
-    # for i in range(3, 10):
-    #     array[i][8].color = GRAY
-    # for i in range(14, 20):
-    #     array[i][6].color = GRAY
-    # for i in range(6, 16):
-    #     array[3][i].color = GRAY
+    for i in range(1, 14):
+        array[10][i].color = GRAY
+    for i in range(6, 19):
+        array[20][i].color = GRAY
+    for i in range(3, 10):
+        array[i][8].color = GRAY
+    for i in range(14, 20):
+        array[i][6].color = GRAY
+    for i in range(6, 16):
+        array[3][i].color = GRAY
     
-    # # Add obstacle
-    # obstacles = [[(2, 20), (10, 21), (6, 29), (2, 20)], [(10, 10), (14, 10), (15, 17), (10, 10)]]
-    # add_obstacle(array, obstacles)
+    # Add obstacle
+    add_obstacle(array, OBSTACLES)
     
-    # for row in array:
-    #     for node in row:
-    #         node.updateNeighbor(array)
+    for row in array:
+        for node in row:
+            node.updateNeighbor(array)
     
     start = array[START[0]][START[1]]
     end = array[END[0]][END[1]]
@@ -303,7 +313,7 @@ def main(win):
     end.color = GREEN
     
     draw(win, array, rows, columns)
-    # greedy_bfs_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
+    greedy_bfs_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
     run = True
     while run:
         for event in pygame.event.get():
