@@ -10,6 +10,9 @@ COLUMNS = 0
 GAP = 20
 WIDTH = COLUMNS * GAP
 HEIGHT = ROWS * GAP
+START = [0, 0]
+END = [0, 0]
+POINTS = []
 WIN = 0
 pygame.display.set_caption("FIDING PATH")
 
@@ -48,12 +51,23 @@ class Node:
 def read_input_file(file_name):
     with open(file_name, 'r') as f:
         lines = f.readlines()
+
+        # kích thước không gian
         global COLUMNS, ROWS, GAP, WIDTH, HEIGHT, WIN
         COLUMNS, ROWS = map(int, lines[0].split(','))
         GAP = 20
         WIDTH = COLUMNS * GAP
         HEIGHT = ROWS * GAP
         WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+
+        # tọa độ điểm bắt đầu và điểm kết thúc
+        global START, END, POINTS
+        START = list(map(int, lines[1].split(',')[0:2]))
+        END = list(map(int, lines[1].split(',')[2:4]))
+        POINTS = [list(map(int, lines[1].split(',')[i:i+2])) for i in range(4, len(lines[1].split(',')), 2)]
+        
+        
+
 
         
 # Tạo mảng 2 chiều gồm các node
@@ -264,32 +278,32 @@ def main(win):
     array = make_array(rows, columns)
     make_border(win, array, rows, columns)
 
-    for i in range(1, 14):
-        array[10][i].color = GRAY
-    for i in range(6, 19):
-        array[20][i].color = GRAY
-    for i in range(3, 10):
-        array[i][8].color = GRAY
-    for i in range(14, 20):
-        array[i][6].color = GRAY
-    for i in range(6, 16):
-        array[3][i].color = GRAY
+    # for i in range(1, 14):
+    #     array[10][i].color = GRAY
+    # for i in range(6, 19):
+    #     array[20][i].color = GRAY
+    # for i in range(3, 10):
+    #     array[i][8].color = GRAY
+    # for i in range(14, 20):
+    #     array[i][6].color = GRAY
+    # for i in range(6, 16):
+    #     array[3][i].color = GRAY
     
-    # Add obstacle
-    obstacles = [[(2, 20), (10, 21), (6, 29), (2, 20)], [(10, 10), (14, 10), (15, 17), (10, 10)]]
-    add_obstacle(array, obstacles)
+    # # Add obstacle
+    # obstacles = [[(2, 20), (10, 21), (6, 29), (2, 20)], [(10, 10), (14, 10), (15, 17), (10, 10)]]
+    # add_obstacle(array, obstacles)
     
-    for row in array:
-        for node in row:
-            node.updateNeighbor(array)
+    # for row in array:
+    #     for node in row:
+    #         node.updateNeighbor(array)
     
-    start = array[6][6]
-    end = array[29][16]
+    start = array[START[0]][START[1]]
+    end = array[END[0]][END[1]]
     start.color = RED
     end.color = GREEN
     
     draw(win, array, rows, columns)
-    greedy_bfs_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
+    # greedy_bfs_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
     run = True
     while run:
         for event in pygame.event.get():
