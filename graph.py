@@ -252,35 +252,46 @@ def greedy_bfs_algorithm(draw, grid, start, end):
                 open[neighbor] = h(neighbor, end)
                 if (neighbor.color != RED and neighbor.color != GREEN):
                     neighbor.color = AQUA
-        pygame.time.delay(5)
+        pygame.time.delay(100)
         draw()
 
 def dijkstra_algorithm(draw, grid, start, end):
-    open = {}
-    prevNode = {}
-    open[start] = 0
-    while True:
+    passed_nodes = {start: 0}   # lưu các node đã đi qua và khoảng cách đến node bắt đầu
+    prevNode = {} # lưu node trước đó của mỗi node. VD: prevNode{curNode: preNode}
+    while True:                     
+
+        # Thoát game       
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-        curNode = min(open, key=open.get)
-        if open[curNode] == float('inf'):
+
+        # Tìm node có khoảng cách nhỏ nhất
+        curNode = min(passed_nodes, key=passed_nodes.get)
+
+        # Đã duyệt hết tất cả các node mà không tìm thấy đường đi
+        if passed_nodes[curNode] == float('inf'):
             print("Không tìm thấy đường đi")
             return False
+        
+        # Tìm thấy đường đi
         if curNode == end:
             rebuild_path(prevNode, start, end, draw)
             return True
-        distance_temp = open[curNode]
-        open[curNode] = float('inf')
+
+        distance_temp = passed_nodes[curNode]
+
+        # Đánh dấu node đã đi qua
+        passed_nodes[curNode] = float('inf')
         if (curNode.color != RED and curNode.color != GREEN):
             curNode.color = AQUA_DARK
-            
+
+        # dijkstra algorithm   
         for neighbor in curNode.neighbors:
-            if neighbor not in prevNode or open[neighbor] > distance_temp + 1:
+            # Nếu neighbor chưa đi qua hoặc khoảng cách mới nhỏ hơn khoảng cách cũ
+            if neighbor not in prevNode or distance_temp + 1 < passed_nodes[neighbor]:
+                # update khoảng cách và prevNode của neighbor
+                passed_nodes[neighbor] = distance_temp + 1
                 prevNode[neighbor] = curNode
-                open[neighbor] = distance_temp + 1
-                if (neighbor.color != RED and neighbor.color != GREEN):
-                    neighbor.color = AQUA
         draw()  
 
 def main(win):
@@ -313,7 +324,7 @@ def main(win):
     end.color = GREEN
     
     draw(win, array, rows, columns)
-    greedy_bfs_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
+    dijkstra_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
     run = True
     while run:
         for event in pygame.event.get():
