@@ -8,8 +8,8 @@ pygame.init()
 ROWS = 0
 COLUMNS = 0
 GAP = 20
-WIDTH = COLUMNS * GAP
-HEIGHT = ROWS * GAP
+WIDTH = 0
+HEIGHT = 0
 START = [0, 0]
 END = [0, 0]
 POINTS = []
@@ -56,7 +56,7 @@ def read_input_file(file_name):
 
         # kích thước không gian
         global COLUMNS, ROWS, GAP, WIDTH, HEIGHT, WIN
-        COLUMNS, ROWS = map(int, lines[0].split(','))
+        COLUMNS, ROWS = map(lambda x: x + 2, map(int, lines[0].split(',')))
         GAP = 20
         WIDTH = COLUMNS * GAP
         HEIGHT = ROWS * GAP
@@ -154,13 +154,6 @@ def bresenham_line(matrix, x0, y0, x1, y1):
             y0 += sy
     matrix[y0][x0].color = GRAY
 
-def add_obstacle(matrix, obstacles):
-    for array in obstacles:
-        for i in range(len(array) - 1):
-            x0, y0 = array[i]
-            x1, y1 = array[i + 1]
-            bresenham_line(matrix, x0, y0, x1, y1)
-
 # Thuật toán nối hai đỉnh
 def bresenham_line(matrix, x0, y0, x1, y1):
     dx = abs(x1 - x0)
@@ -254,7 +247,6 @@ def a_star_algorithm_2(draw, grid, start, end):
                 f_distance[neighbor] = g_distance_temp + h(neighbor, end)
                 if (neighbor.color != RED and neighbor.color != GREEN):
                     neighbor.color = AQUA
-        pygame.time.delay(100)
         draw()
         
 def greedy_bfs_algorithm(draw, grid, start, end):
@@ -314,7 +306,7 @@ def dijkstra_algorithm(draw, grid, start, end):
         # Đánh dấu node đã đi qua
         passed_nodes[curNode] = float('inf')
         if (curNode.color != RED and curNode.color != GREEN):
-            curNode.color = AQUA_DARK
+            curNode.color = AQUA
 
         # dijkstra algorithm   
         for neighbor in curNode.neighbors:
@@ -327,32 +319,44 @@ def dijkstra_algorithm(draw, grid, start, end):
 
 def dfs_algorithm(draw, grid, start, end):
     visited = []  # Danh sách các đỉnh đã được duyệt
+    true_path = []  # Danh sách các đỉnh tạo thành đường đi 
     stack = [start]  # Ngăn xếp để lưu trữ các đỉnh cần duyệt
 
     while stack:
-        # Thoát game       
+        # quit game       
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
 
-        curNode = stack.pop()  # Lấy đỉnh đầu tiên từ ngăn xếp
-    
-        # Tìm thấy đường đi
+        curNode = stack.pop() 
+
+        # found true path
         if curNode == end:
-            rebuild_path(visited, start, end, draw)
+            for node in true_path[1:]:
+                node.color = YELLOW
+                pygame.time.delay(30)
+                draw()
             return True
 
+        # visit node
         if curNode not in visited:
-            # visit
             visited.append(curNode)
-            if (curNode.color != RED and curNode.color != GREEN):
-                curNode.color = AQUA_DARK
-            # add neighbors to stack
-            stack.extend([neighbor for neighbor in curNode.neighbors 
-                          if neighbor not in visited 
-                          and neighbor not in stack])
-    
-        pygame.time.delay(100)
+            true_path.append(curNode)
+        if (curNode.color != RED and curNode.color != GREEN):
+            curNode.color = AQUA
+            draw()
+
+        # nếu không có neighbor hoặc neighbor đã được duyệt hết thì 
+        # quay lại đỉnh gần nhất còn neighbor chưa được duyệt
+        temp = true_path[-1]
+        while not temp.neighbors or all(neighbor in visited for neighbor in temp.neighbors):
+            true_path.pop()
+            temp = true_path[-1]
+        curNode = temp
+         
+        # add neighbors to stack
+        stack.extend([neighbor for neighbor in curNode.neighbors 
+                    if neighbor not in visited])
     draw()      
 
 def main(win):
@@ -374,7 +378,7 @@ def main(win):
     end.color = GREEN
     
     draw(win, array, rows, columns)
-    a_star_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
+    dfs_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
     run = True
     while run:
         for event in pygame.event.get():
