@@ -8,8 +8,8 @@ pygame.init()
 ROWS = 0
 COLUMNS = 0
 GAP = 20
-WIDTH = COLUMNS * GAP
-HEIGHT = ROWS * GAP
+WIDTH = 0
+HEIGHT = 0
 START = [0, 0]
 END = [0, 0]
 POINTS = []
@@ -56,7 +56,7 @@ def read_input_file(file_name):
 
         # kích thước không gian
         global COLUMNS, ROWS, GAP, WIDTH, HEIGHT, WIN
-        COLUMNS, ROWS = map(int, lines[0].split(','))
+        COLUMNS, ROWS = map(lambda x: x + 2, map(int, lines[0].split(',')))
         GAP = 20
         WIDTH = COLUMNS * GAP
         HEIGHT = ROWS * GAP
