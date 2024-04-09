@@ -319,16 +319,16 @@ def main(win):
     array = make_array(rows, columns)
     make_border(win, array, rows, columns)
 
-    for i in range(1, 18):
-        array[10][i].color = GRAY
-    for i in range(2, 19):
-        array[20][i].color = GRAY
-    for i in range(3, 10):
-        array[i][8].color = GRAY
-    for i in range(14, 20):
-        array[i][6].color = GRAY
-    for i in range(6, 16):
-        array[3][i].color = GRAY
+    # for i in range(1, 18):
+    #     array[10][i].color = GRAY
+    # for i in range(2, 19):
+    #     array[20][i].color = GRAY
+    # for i in range(3, 10):
+    #     array[i][8].color = GRAY
+    # for i in range(14, 20):
+    #     array[i][6].color = GRAY
+    # for i in range(6, 16):
+    #     array[3][i].color = GRAY
     
     # Add obstacle
     add_obstacle(array, OBSTACLES)
