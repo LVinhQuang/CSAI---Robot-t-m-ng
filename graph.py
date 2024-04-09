@@ -317,7 +317,7 @@ def dijkstra_algorithm(draw, grid, start, end):
                 prevNode[neighbor] = curNode
         draw()  
 
-def dfs_algorithm(draw, grid, start, end, win):
+def dfs_algorithm(draw, grid, start, end):
     visited = []  # Danh sách các đỉnh đã được duyệt
     true_path = []  # Danh sách các đỉnh tạo thành đường đi 
     stack = [start]  # Ngăn xếp để lưu trữ các đỉnh cần duyệt
@@ -334,7 +334,7 @@ def dfs_algorithm(draw, grid, start, end, win):
         if curNode == end:
             for node in true_path[1:]:
                 node.color = YELLOW
-                pygame.time.delay(100)
+                pygame.time.delay(30)
                 draw()
             return True
 
@@ -357,8 +357,6 @@ def dfs_algorithm(draw, grid, start, end, win):
         # add neighbors to stack
         stack.extend([neighbor for neighbor in curNode.neighbors 
                     if neighbor not in visited])
-            
-        pygame.time.delay(10)
     draw()      
 
 def main(win):
@@ -380,7 +378,7 @@ def main(win):
     end.color = GREEN
     
     draw(win, array, rows, columns)
-    dfs_algorithm(lambda: draw(win, array, rows, columns), array, start, end, win)
+    dfs_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
     run = True
     while run:
         for event in pygame.event.get():
