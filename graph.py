@@ -127,10 +127,13 @@ def h(node1, node2):
 # Hàm vẽ đường ngắn nhất sau khi tìm ra
 def rebuild_path(prevNode, start, end, draw):
     curNode = end
+    weight = 1
     while prevNode[curNode] != start:
         curNode = prevNode[curNode]
+        weight += 1
         curNode.color = YELLOW
         draw()
+    return weight
 
 # Thuật toán nối hai đỉnh
 def bresenham_line(matrix, x0, y0, x1, y1):
@@ -157,9 +160,36 @@ def add_obstacle(matrix, obstacles):
             x0, y0 = array[i]
             x1, y1 = array[i + 1]
             bresenham_line(matrix, x0, y0, x1, y1)
+
+# Thuật toán nối hai đỉnh
+def bresenham_line(matrix, x0, y0, x1, y1):
+    dx = abs(x1 - x0)
+    dy = abs(y1 - y0)
+    sx = 1 if x0 < x1 else -1
+    sy = 1 if y0 < y1 else -1
+    err = dx - dy
+
+    while x0 != x1 or y0 != y1:
+        matrix[y0][x0].color = GRAY
+        e2 = 2 * err
+        if e2 > -dy:
+            err -= dy
+            x0 += sx
+        if e2 < dx:
+            err += dx
+            y0 += sy
+    matrix[y0][x0].color = GRAY
+
+def add_obstacle(matrix, obstacles):
+    for array in obstacles:
+        reversed_array = [(y, x) for (x, y) in array]
+        for i in range(len(reversed_array) - 1):
+            x0, y0 = reversed_array[i]
+            x1, y1 = reversed_array[i + 1]
+            bresenham_line(matrix, x0, y0, x1, y1)
         # nối đỉnh đầu và cuối
-        x0, y0 = array[len(array) - 1]
-        x1, y1 = array[0]
+        x0, y0 = reversed_array[len(reversed_array) - 1]
+        x1, y1 = reversed_array[0]
         bresenham_line(matrix, x0, y0, x1, y1)
 
 def a_star_algorithm(draw, grid, start, end):
@@ -178,7 +208,8 @@ def a_star_algorithm(draw, grid, start, end):
             print("Không tìm thấy đường đi")
             return False
         if curNode == end:
-            rebuild_path(prevNode, start, end, draw)
+            weight = rebuild_path(prevNode, start, end, draw)
+            print("Đường đi tìm được có chiều dài là: ", weight)
             return True
         g_distance_temp = g_distance[curNode] + 1
         g_distance[curNode] = float('inf')
