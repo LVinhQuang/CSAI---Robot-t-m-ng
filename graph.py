@@ -182,13 +182,14 @@ def bresenham_line(matrix, x0, y0, x1, y1):
 
 def add_obstacle(matrix, obstacles):
     for array in obstacles:
-        for i in range(len(array) - 1):
-            x0, y0 = array[i]
-            x1, y1 = array[i + 1]
+        reversed_array = [(y, x) for (x, y) in array]
+        for i in range(len(reversed_array) - 1):
+            x0, y0 = reversed_array[i]
+            x1, y1 = reversed_array[i + 1]
             bresenham_line(matrix, x0, y0, x1, y1)
         # nối đỉnh đầu và cuối
-        x0, y0 = array[len(array) - 1]
-        x1, y1 = array[0]
+        x0, y0 = reversed_array[len(reversed_array) - 1]
+        x1, y1 = reversed_array[0]
         bresenham_line(matrix, x0, y0, x1, y1)
 
 def a_star_algorithm(draw, grid, start, end):
