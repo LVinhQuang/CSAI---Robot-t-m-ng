@@ -5,12 +5,17 @@ import pygame
 from queue import PriorityQueue
 pygame.init()
 
-ROWS = 20
-COLUMNS = 35
+ROWS = 0
+COLUMNS = 0
 GAP = 20
 WIDTH = COLUMNS * GAP
 HEIGHT = ROWS * GAP
-WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+START = [0, 0]
+END = [0, 0]
+POINTS = []
+OBSTACLE_COUNT = 0
+OBSTACLES = []
+WIN = 0
 pygame.display.set_caption("FIDING PATH")
 
 # Hằng số màu
@@ -44,7 +49,34 @@ class Node:
             if grid[self.x][self.y+1].color != GRAY:
                 self.neighbors.append(grid[self.x][self.y+1])   # Thêm node bên dưới vào neighbors
 
+# read input file
+def read_input_file(file_name):
+    with open(file_name, 'r') as f:
+        lines = f.readlines()
 
+        # kích thước không gian
+        global COLUMNS, ROWS, GAP, WIDTH, HEIGHT, WIN
+        COLUMNS, ROWS = map(int, lines[0].split(','))
+        GAP = 20
+        WIDTH = COLUMNS * GAP
+        HEIGHT = ROWS * GAP
+        WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+
+        # tọa độ điểm bắt đầu và điểm kết thúc
+        global START, END, POINTS
+        START = list(map(int, lines[1].split(',')[0:2]))
+        END = list(map(int, lines[1].split(',')[2:4]))
+        POINTS = [list(map(int, lines[1].split(',')[i:i+2])) for i in range(4, len(lines[1].split(',')), 2)]
+     
+        # số lượng obstacle
+        global OBSTACLE_COUNT
+        OBSTACLE_COUNT = int(lines[2])
+
+        # tọa độ các đỉnh của các obstacle
+        global OBSTACLES
+        for j in range(3, 3 + OBSTACLE_COUNT):
+            OBSTACLES.append([list(map(int, lines[j].split(',')[i:i+2])) for i in range(0, len(lines[j].split(',')), 2)])
+        
 # Tạo mảng 2 chiều gồm các node
 def make_array(rows, columns):      
     grid = []
@@ -154,6 +186,10 @@ def add_obstacle(matrix, obstacles):
             x0, y0 = array[i]
             x1, y1 = array[i + 1]
             bresenham_line(matrix, x0, y0, x1, y1)
+        # nối đỉnh đầu và cuối
+        x0, y0 = array[len(array) - 1]
+        x1, y1 = array[1]
+        bresenham_line(matrix, x0, y0, x1, y1)
 
 def a_star_algorithm(draw, grid, start, end):
     f_distance = {}
@@ -246,10 +282,37 @@ def greedy_bfs_algorithm(draw, grid, start, end):
                 open[neighbor] = h(neighbor, end)
                 if (neighbor.color != RED and neighbor.color != GREEN):
                     neighbor.color = AQUA
-                
-        pygame.time.delay(100)
+        pygame.time.delay(5)
         draw()
-        
+
+def dijkstra_algorithm(draw, grid, start, end):
+    open = {}
+    prevNode = {}
+    open[start] = 0
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+        curNode = min(open, key=open.get)
+        if open[curNode] == float('inf'):
+            print("Không tìm thấy đường đi")
+            return False
+        if curNode == end:
+            rebuild_path(prevNode, start, end, draw)
+            return True
+        distance_temp = open[curNode]
+        open[curNode] = float('inf')
+        if (curNode.color != RED and curNode.color != GREEN):
+            curNode.color = AQUA_DARK
+            
+        for neighbor in curNode.neighbors:
+            if neighbor not in prevNode or open[neighbor] > distance_temp + 1:
+                prevNode[neighbor] = curNode
+                open[neighbor] = distance_temp + 1
+                if (neighbor.color != RED and neighbor.color != GREEN):
+                    neighbor.color = AQUA
+        draw()  
+
 def main(win):
     rows = ROWS
     columns = COLUMNS
@@ -268,15 +331,14 @@ def main(win):
         array[3][i].color = GRAY
     
     # Add obstacle
-    obstacles = [[(2, 20), (10, 21), (6, 29), (2, 20)], [(10, 10), (14, 10), (15, 17), (10, 10)]]
-    add_obstacle(array, obstacles)
+    add_obstacle(array, OBSTACLES)
     
     for row in array:
         for node in row:
             node.updateNeighbor(array)
     
-    start = array[6][6]
-    end = array[29][16]
+    start = array[START[0]][START[1]]
+    end = array[END[0]][END[1]]
     start.color = RED
     end.color = GREEN
     
@@ -289,4 +351,5 @@ def main(win):
                 run = False
     pygame.quit()
 
+read_input_file('input.txt')
 main(WIN)
