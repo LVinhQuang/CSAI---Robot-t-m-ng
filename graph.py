@@ -159,7 +159,7 @@ def add_obstacle(matrix, obstacles):
             bresenham_line(matrix, x0, y0, x1, y1)
         # nối đỉnh đầu và cuối
         x0, y0 = array[len(array) - 1]
-        x1, y1 = array[1]
+        x1, y1 = array[0]
         bresenham_line(matrix, x0, y0, x1, y1)
 
 def a_star_algorithm(draw, grid, start, end):
@@ -305,18 +305,23 @@ def dfs_algorithm(draw, grid, start, end):
                 pygame.quit()
 
         curNode = stack.pop()  # Lấy đỉnh đầu tiên từ ngăn xếp
-        
+    
         # Tìm thấy đường đi
         if curNode == end:
             rebuild_path(visited, start, end, draw)
             return True
 
         if curNode not in visited:
+            # visit
             visited.append(curNode)
             if (curNode.color != RED and curNode.color != GREEN):
                 curNode.color = AQUA_DARK
-            # Thêm tất cả các đỉnh kề của đỉnh hiện tại vào ngăn xếp
-            stack.extend([neighbor for neighbor in curNode.neighbors if neighbor not in visited])
+            # add neighbors to stack
+            stack.extend([neighbor for neighbor in curNode.neighbors 
+                          if neighbor not in visited 
+                          and neighbor not in stack])
+    
+        pygame.time.delay(100)
     draw()      
 
 def main(win):
@@ -324,17 +329,6 @@ def main(win):
     columns = COLUMNS
     array = make_array(rows, columns)
     make_border(win, array, rows, columns)
-
-    for i in range(1, 14):
-        array[10][i].color = GRAY
-    for i in range(6, 19):
-        array[20][i].color = GRAY
-    for i in range(3, 10):
-        array[i][8].color = GRAY
-    for i in range(14, 20):
-        array[i][6].color = GRAY
-    for i in range(6, 16):
-        array[3][i].color = GRAY
     
     # Add obstacle
     add_obstacle(array, OBSTACLES)
@@ -349,7 +343,7 @@ def main(win):
     end.color = GREEN
     
     draw(win, array, rows, columns)
-    dfs_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
+    a_star_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
     run = True
     while run:
         for event in pygame.event.get():
