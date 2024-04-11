@@ -35,6 +35,6 @@ graph = [
     [30, 20, 45, 35, 50, 0]
 ]
 
-shortest_path_length, shortest_path = find_shortest_path_in_weighted_graph(graph)
-print("Shortest path length:", shortest_path_length)
-print("Shortest path:", shortest_path)
+# shortest_path_length, shortest_path = find_shortest_path_in_weighted_graph(graph)
+# print("Shortest path length:", shortest_path_length)
+# print("Shortest path:", shortest_path)
