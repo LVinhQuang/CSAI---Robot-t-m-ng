@@ -27,7 +27,9 @@ RED = (255,0,0)         # Điểm bắt đầu
 GREEN = (0,255,0)       # Điểm kết thúc
 AQUA = (0,255,255)      # Đường mở rộng 
 YELLOW = (255,255,0)    # Đường tìm được
+YELLOW_DARK = (200, 200, 0)
 AQUA_DARK = (0, 200, 200) # Màu đường đã đi
+PINK = (255, 200, 203) # Điểm đón
 
 # Tạo class Node là các ô vuông trong mê cung
 class Node:
@@ -130,7 +132,10 @@ def rebuild_path(prevNode, start, end, draw):
     curNode = end
     while prevNode[curNode] != start:
         curNode = prevNode[curNode]
-        curNode.color = YELLOW
+        if curNode.color == YELLOW:
+            curNode.color = YELLOW_DARK
+        else:
+            curNode.color = YELLOW
         draw()
 
 def cal_weight(prevNode, start, end):
@@ -277,14 +282,14 @@ def greedy_bfs_algorithm(start, end):
         
         distance_temp = open[curNode]
         open[curNode] = float('inf')
-        if (curNode.color != RED and curNode.color != GREEN):
+        if (curNode.color != RED and curNode.color != GREEN and curNode.color != PINK):
             curNode.color = AQUA_DARK
             
         for neighbor in curNode.neighbors or open[neighbor] <= distance_temp:
             if neighbor not in prevNode:
                 prevNode[neighbor] = curNode
                 open[neighbor] = h(neighbor, end)
-                if (neighbor.color != RED and neighbor.color != GREEN):
+                if (neighbor.color != RED and neighbor.color != GREEN and neighbor.color != PINK):
                     neighbor.color = AQUA
 
 def dijkstra_algorithm(draw, grid, start, end):
@@ -430,7 +435,12 @@ def main(win):
             node.updateNeighbor(array)
             
     # level 3
-    pointList = [array[1][10], array[3][13], array[5][15], array[17][7], array[11][11]]
+    pointList = [array[1][10], array[17][7], array[3][13], array[5][15], array[11][11]]
+    pointList[0].color = RED
+    pointList[len(pointList)-1].color = GREEN
+    for i in range(1, len(pointList)-1):
+        pointList[i].color = PINK
+        
     level_3(pointList, lambda: draw(win, array, rows, columns), array)
     
     # start = array[START[0]][START[1]]
