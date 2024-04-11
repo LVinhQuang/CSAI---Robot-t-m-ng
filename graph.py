@@ -329,49 +329,36 @@ def dijkstra_algorithm(draw, grid, start, end):
                 # update khoảng cách và prevNode của neighbor
                 passed_nodes[neighbor] = distance_temp + 1
                 prevNode[neighbor] = curNode
-        draw()  
+        draw()
 
-def dfs_algorithm(draw, grid, start, end):
-    visited = []  # Danh sách các đỉnh đã được duyệt
-    true_path = []  # Danh sách các đỉnh tạo thành đường đi 
-    stack = [start]  # Ngăn xếp để lưu trữ các đỉnh cần duyệt
-
-    while stack:
-        # quit game       
+def bfs_algorithm(draw, grid, start, end):
+    open = [start] # danh sách các node mở với node bắt đầu
+    prevNode = {} # lưu node trước đó của mỗi node. VD: prevNode{curNode: preNode}
+    while True:
+        # thoát game
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
 
-        curNode = stack.pop() 
+        # Lấy ra node hiện tại từ danh sách các node mở
+        curNode = open.pop(0)
 
-        # found true path
+        # Tìm thấy đường đi
         if curNode == end:
-            for node in true_path[1:]:
-                node.color = YELLOW
-                pygame.time.delay(30)
-                draw()
+            # Xây dựng lại đường đi từ node bắt đầu đến node kết thúc
+            rebuild_path(prevNode, start, end, draw)
             return True
-
-        # visit node
-        if curNode not in visited:
-            visited.append(curNode)
-            true_path.append(curNode)
+        
+        # Đánh dấu node đã đi qua
         if (curNode.color != RED and curNode.color != GREEN):
             curNode.color = AQUA
-            draw()
 
-        # nếu không có neighbor hoặc neighbor đã được duyệt hết thì 
-        # quay lại đỉnh gần nhất còn neighbor chưa được duyệt
-        temp = true_path[-1]
-        while not temp.neighbors or all(neighbor in visited for neighbor in temp.neighbors):
-            true_path.pop()
-            temp = true_path[-1]
-        curNode = temp
-         
-        # add neighbors to stack
-        stack.extend([neighbor for neighbor in curNode.neighbors 
-                    if neighbor not in visited])
-    draw()      
+        # Duyệt qua các node lân cận của node hiện tại
+        for neighbor in curNode.neighbors:
+            if neighbor not in prevNode:
+                prevNode[neighbor] = curNode
+                open.append(neighbor)
+        draw()    
 
 def createGraph(pointList):
     weightMatrix = []
@@ -428,28 +415,28 @@ def main(win):
     make_border(win, array, rows, columns)
     
     # Add obstacle
-    #add_obstacle(array, OBSTACLES)
+    add_obstacle(array, OBSTACLES)
     
     for row in array:
         for node in row:
             node.updateNeighbor(array)
             
     # level 3
-    pointList = [array[1][10], array[17][7], array[3][13], array[5][15], array[11][11]]
-    pointList[0].color = RED
-    pointList[len(pointList)-1].color = GREEN
-    for i in range(1, len(pointList)-1):
-        pointList[i].color = PINK
+    # pointList = [array[1][10], array[17][7], array[3][13], array[5][15], array[11][11]]
+    # pointList[0].color = RED
+    # pointList[len(pointList)-1].color = GREEN
+    # for i in range(1, len(pointList)-1):
+    #     pointList[i].color = PINK
         
-    level_3(pointList, lambda: draw(win, array, rows, columns), array)
+    # level_3(pointList, lambda: draw(win, array, rows, columns), array)
     
-    # start = array[START[0]][START[1]]
-    # end = array[END[0]][END[1]]
-    # start.color = RED
-    # end.color = GREEN
+    start = array[START[0]][START[1]]
+    end = array[END[0]][END[1]]
+    start.color = RED
+    end.color = GREEN
     
     # draw(win, array, rows, columns)
-    # dfs_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
+    bfs_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
     
     
     run = True
