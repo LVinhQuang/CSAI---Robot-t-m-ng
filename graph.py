@@ -244,8 +244,6 @@ def greedy_bfs_algorithm_level_3(start, end):
             if neighbor not in prevNode:
                 prevNode[neighbor] = curNode
                 open[neighbor] = h(neighbor, end)
-                if (neighbor.color != RED and neighbor.color != GREEN and neighbor.color != PINK):
-                    neighbor.color = AQUA
 
 # Thuật toán Greedy BFS (mức 2)
 def greedy_bfs_algorithm(draw, grid, start, end):
