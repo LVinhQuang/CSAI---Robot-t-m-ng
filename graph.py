@@ -119,7 +119,7 @@ def draw(win, array, rows, columns):
     draw_grid(win, rows, columns)
     pygame.display.update()
 
-# Hàm ước lượng khoảng cách giữa 2 node h(x)
+# Hàm ước lượng khoảng cách giữa 2 node h(x) theo phương pháp Manhattan
 def h(node1, node2):
     x1 = node1.x
     y1 = node1.y
@@ -130,13 +130,16 @@ def h(node1, node2):
 # Hàm vẽ đường ngắn nhất sau khi tìm ra
 def rebuild_path(prevNode, start, end, draw):
     curNode = end
+    weight = 1
     while prevNode[curNode] != start:
         curNode = prevNode[curNode]
+        weight += 1
         if curNode.color == YELLOW:
             curNode.color = YELLOW_DARK
         else:
             curNode.color = YELLOW
         draw()
+    return weight
 
 def cal_weight(prevNode, start, end):
     curNode = end
@@ -166,25 +169,7 @@ def bresenham_line(matrix, x0, y0, x1, y1):
             y0 += sy
     matrix[y0][x0].color = GRAY
 
-# Thuật toán nối hai đỉnh
-def bresenham_line(matrix, x0, y0, x1, y1):
-    dx = abs(x1 - x0)
-    dy = abs(y1 - y0)
-    sx = 1 if x0 < x1 else -1
-    sy = 1 if y0 < y1 else -1
-    err = dx - dy
-
-    while x0 != x1 or y0 != y1:
-        matrix[y0][x0].color = GRAY
-        e2 = 2 * err
-        if e2 > -dy:
-            err -= dy
-            x0 += sx
-        if e2 < dx:
-            err += dx
-            y0 += sy
-    matrix[y0][x0].color = GRAY
-
+# Thêm chướng ngại vật vào mê cung
 def add_obstacle(matrix, obstacles):
     for array in obstacles:
         reversed_array = [(y, x) for (x, y) in array]
@@ -197,6 +182,7 @@ def add_obstacle(matrix, obstacles):
         x1, y1 = reversed_array[0]
         bresenham_line(matrix, x0, y0, x1, y1)
 
+# Thuật toán A*
 def a_star_algorithm(draw, grid, start, end):
     f_distance = {}
     g_distance = {}
@@ -208,7 +194,7 @@ def a_star_algorithm(draw, grid, start, end):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 
-        curNode = min(f_distance, key=f_distance.get)
+        curNode = min(f_distance, key=lambda node: (f_distance[node], h(node, end)))
         if f_distance[curNode] == float('inf'):
             print("Không tìm thấy đường đi")
             return False
@@ -226,42 +212,11 @@ def a_star_algorithm(draw, grid, start, end):
                 f_distance[neighbor] = g_distance_temp + h(neighbor, end)
                 if (neighbor.color != RED and neighbor.color != GREEN):
                     neighbor.color = AQUA
+        pygame.time.delay(100)
         draw()
 
-def a_star_algorithm_2(draw, grid, start, end):
-    f_distance = {}
-    g_distance = {}
-    prevNode = {}
-    g_distance[start] = 0
-    f_distance[start] = 0 + h(start, end)
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                
-        curNode = min(f_distance, key=f_distance.get)
-        
-        if f_distance[curNode] == float('inf'):
-            print("Không tìm thấy đường đi")
-            return False
-        if curNode == end:
-            rebuild_path(prevNode, start, end, draw)
-            return True
-        g_distance_temp = g_distance[curNode] + 1
-        g_distance[curNode] = float('inf')
-        f_distance[curNode] = float('inf')
-        if (curNode.color != RED and curNode.color != GREEN):
-            curNode.color = AQUA_DARK
-        for neighbor in curNode.neighbors:
-            if neighbor not in g_distance: # or g_distance[neighbor] < g_distance_temp:
-                prevNode[neighbor] = curNode
-                g_distance[neighbor] = g_distance_temp
-                f_distance[neighbor] = g_distance_temp + h(neighbor, end)
-                if (neighbor.color != RED and neighbor.color != GREEN):
-                    neighbor.color = AQUA
-        draw()
-        
-def greedy_bfs_algorithm(start, end):
+# Thuật toán Greedy BFS
+def greedy_bfs_algorithm_level_3(start, end):
     
     open = {}
     prevNode = {}
@@ -292,6 +247,42 @@ def greedy_bfs_algorithm(start, end):
                 if (neighbor.color != RED and neighbor.color != GREEN and neighbor.color != PINK):
                     neighbor.color = AQUA
 
+# Thuật toán Greedy BFS (mức 2)
+def greedy_bfs_algorithm(draw, grid, start, end):
+    
+    open = {}
+    prevNode = {}
+    open[start] = h(start, end)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+        curNode = min(open, key=open.get)
+        
+        # Đã duyệt hết tất cả các node mà không tìm thấy đường đi
+        if open[curNode] == float('inf'):
+            print("Không tìm thấy đường đi")
+            return False
+        
+        # Tìm thấy đường đi
+        if curNode == end:
+            rebuild_path(prevNode, start, end, draw)
+            return True
+        
+        distance_temp = open[curNode]
+        open[curNode] = float('inf')
+        if (curNode.color != RED and curNode.color != GREEN and curNode.color != PINK):
+            curNode.color = AQUA_DARK
+            
+        for neighbor in curNode.neighbors or open[neighbor] <= distance_temp:
+            if neighbor not in prevNode:
+                prevNode[neighbor] = curNode
+                open[neighbor] = h(neighbor, end)
+                if (neighbor.color != RED and neighbor.color != GREEN and neighbor.color != PINK):
+                    neighbor.color = AQUA
+        pygame.time.delay(100)
+        draw()
+# Thuật toán Dijkstra
 def dijkstra_algorithm(draw, grid, start, end):
     passed_nodes = {start: 0}   # lưu các node đã đi qua và khoảng cách đến node bắt đầu
     prevNode = {} # lưu node trước đó của mỗi node. VD: prevNode{curNode: preNode}
@@ -331,6 +322,7 @@ def dijkstra_algorithm(draw, grid, start, end):
                 prevNode[neighbor] = curNode
         draw()  
 
+# Thuật toán DFS
 def dfs_algorithm(draw, grid, start, end):
     visited = []  # Danh sách các đỉnh đã được duyệt
     true_path = []  # Danh sách các đỉnh tạo thành đường đi 
@@ -373,6 +365,8 @@ def dfs_algorithm(draw, grid, start, end):
                     if neighbor not in visited])
     draw()      
 
+
+# Bắt đầu các thuật toán làm mức 3
 def createGraph(pointList):
     weightMatrix = []
     matrix_size = len(pointList)
@@ -383,7 +377,7 @@ def createGraph(pointList):
         for j in range(i+1, len(pointList)):
             startNode = pointList[i]
             endNode = pointList[j]
-            weight, prevNode = greedy_bfs_algorithm(startNode, endNode)
+            weight, prevNode = greedy_bfs_algorithm_level_3(start=startNode, end=endNode)
             weight_array[j] = weight
             prevNode_list[(startNode, endNode)] = prevNode
         weightMatrix.append(weight_array)
@@ -416,11 +410,18 @@ def rebuild_advanture(shortest_path, pointList, prevNode_list, draw):
         pygame.time.delay(1000)
 
 def level_3(pointList, draw, grid):
+    # Styling
+    pointList[0].color = RED
+    pointList[len(pointList)-1].color = GREEN
+    for i in range(1, len(pointList)-1):
+        pointList[i].color = PINK  
+
     weightMatrix, prevNode_list = createGraph(pointList)
     shortest_path_length, shortest_path = find_shortest_path_in_weighted_graph(weightMatrix)
     print("(stp, stpl):", shortest_path, shortest_path_length)
     rebuild_advanture(shortest_path, pointList, prevNode_list, draw)
-    
+
+#Hàm chính
 def main(win):
     rows = ROWS
     columns = COLUMNS
@@ -428,29 +429,34 @@ def main(win):
     make_border(win, array, rows, columns)
     
     # Add obstacle
-    #add_obstacle(array, OBSTACLES)
+    add_obstacle(array, OBSTACLES)
     
     for row in array:
         for node in row:
             node.updateNeighbor(array)
             
-    # level 3
+    #level 3
     pointList = [array[1][10], array[17][7], array[3][13], array[5][15], array[11][11]]
-    pointList[0].color = RED
-    pointList[len(pointList)-1].color = GREEN
-    for i in range(1, len(pointList)-1):
-        pointList[i].color = PINK
-        
-    level_3(pointList, lambda: draw(win, array, rows, columns), array)
     
-    # start = array[START[0]][START[1]]
-    # end = array[END[0]][END[1]]
-    # start.color = RED
-    # end.color = GREEN
     
-    # draw(win, array, rows, columns)
-    # dfs_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
+    start = array[START[0]][START[1]]
+    end = array[END[0]][END[1]]
+    start.color = RED
+    end.color = GREEN
     
+    draw(win, array, rows, columns)
+    # a_star_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
+
+    switch = {
+        1: lambda: a_star_algorithm(lambda: draw(win, array, rows, columns), array, start, end),
+        2: lambda: print("Bạn đã chọn: " + input("Chọn một số từ 1 đến 3: ")),
+        3: lambda:level_3(pointList, lambda: draw(win, array, rows, columns), array),
+        4: lambda: greedy_bfs_algorithm(lambda: draw(win, array, rows, columns), array, start, end),
+    }
+    
+    choice = input("Chọn mức (1, 2 ,3): ")
+    func = switch.get(int(choice), lambda: print("Invalid choice"))
+    func()
     
     run = True
     while run:
