@@ -243,8 +243,6 @@ def greedy_bfs_algorithm_level_3(start, end):
             if neighbor not in prevNode:
                 prevNode[neighbor] = curNode
                 open[neighbor] = h(neighbor, end)
-                if (neighbor.color != RED and neighbor.color != GREEN and neighbor.color != PINK):
-                    neighbor.color = AQUA
 
 # Thuật toán Greedy BFS (mức 2)
 def greedy_bfs_algorithm(draw, grid, start, end):
@@ -419,15 +417,20 @@ def main(win):
     for row in array:
         for node in row:
             node.updateNeighbor(array)
-            
-    #level 3
-    pointList = [array[1][10], array[17][7], array[3][13], array[5][15], array[11][11]]
-    
     
     start = array[START[0]][START[1]]
     end = array[END[0]][END[1]]
     start.color = RED
     end.color = GREEN
+    
+    #level 3
+    pickUp_points = []
+    for i in range (len(POINTS)):
+        pickUp_point = array[POINTS[i][0]][POINTS[i][1]]
+        pickUp_points.append(pickUp_point)
+        
+    pointList = [start, pickUp_points, end]
+    flattened_pointList = [item for sublist in pointList for item in (sublist if isinstance(sublist, list) else [sublist])]
     
     draw(win, array, rows, columns)
     # a_star_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
@@ -439,7 +442,7 @@ def main(win):
             '2': lambda: greedy_bfs_algorithm(lambda: draw(win, array, rows, columns), array, start, end),
             '3': lambda: dijkstra_algorithm(lambda: draw(win, array, rows, columns), array, start, end),
         }.get(input("Chọn thuật toán: 1. A* 2. Greedy BFS 3. Dijkstra: "), lambda: print("Invalid choice"))(),
-        '3': level_3,
+        '3': lambda: level_3(flattened_pointList, lambda: draw(win, array, rows, columns), array),
     }
 
     choice = input("Chọn mức (1, 2 ,3): ")
