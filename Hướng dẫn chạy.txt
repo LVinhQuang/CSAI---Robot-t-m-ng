@@ -1,0 +1,16 @@
+1. Các thư viện được sử dụng
+ - numpy
+ - matplotlib
+ - math
+ - pygame
+
+2. Hướng dẫn chạy:
+ - Đảm bảo file input.txt đã có trong thư mục làm việc với dữ liệu đầu vào đúng format
+ - Chạy file graph.py. Chương trình sẽ thực hiện đọc dữ liệu đầu vào từ file input.txt
+ - Khi chạy thành công, cần nhập yêu cầu vào console với 3 lựa chọn:
+    + nhập số 1: thực hiện mức 1 với thuật toán BFS
+    + Nhập số 2: thực hiện mức 2. Tiếp tục yêu cầu nhập vào console để chọn thuật toán chạy:
+        + Nhập số 1: thuật toán A*
+        + Nhập số 2: Thuật toán Greedy BFS
+        + Nhập số 3: Thuật toán Dijkstra
+    + Nhập số 3: thực hiện mức 3

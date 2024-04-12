@@ -125,7 +125,7 @@ def h(node1, node2):
     y1 = node1.y
     x2 = node2.x
     y2 = node2.y
-    return abs(x1 - x2) + abs(y1 - y2)
+    return math.sqrt((x1 - x2)*(x1-x2) + (y1 - y2)*(y1-y2))
 
 # Hàm vẽ đường ngắn nhất sau khi tìm ra
 def rebuild_path(prevNode, start, end, draw):
@@ -206,13 +206,12 @@ def a_star_algorithm(draw, grid, start, end):
         g_distance[curNode] = float('inf')
         f_distance[curNode] = float('inf')
         for neighbor in curNode.neighbors:
-            if neighbor not in g_distance or g_distance[neighbor] < g_distance_temp:
+            if neighbor not in g_distance:
                 prevNode[neighbor] = curNode
                 g_distance[neighbor] = g_distance_temp
                 f_distance[neighbor] = g_distance_temp + h(neighbor, end)
                 if (neighbor.color != RED and neighbor.color != GREEN):
                     neighbor.color = AQUA
-        pygame.time.delay(100)
         draw()
 
 # Thuật toán Greedy BFS
