@@ -320,50 +320,35 @@ def dijkstra_algorithm(draw, grid, start, end):
                 # update khoảng cách và prevNode của neighbor
                 passed_nodes[neighbor] = distance_temp + 1
                 prevNode[neighbor] = curNode
-        draw()  
+        draw()
 
-# Thuật toán DFS
-def dfs_algorithm(draw, grid, start, end):
-    visited = []  # Danh sách các đỉnh đã được duyệt
-    true_path = []  # Danh sách các đỉnh tạo thành đường đi 
-    stack = [start]  # Ngăn xếp để lưu trữ các đỉnh cần duyệt
-
-    while stack:
-        # quit game       
+def bfs_algorithm(draw, grid, start, end):
+    open = [start] # danh sách các node mở với node bắt đầu
+    prevNode = {} # lưu node trước đó của mỗi node. VD: prevNode{curNode: preNode}
+    while True:
+        # thoát game
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
 
-        curNode = stack.pop() 
+        # Lấy ra node hiện tại từ danh sách các node mở
+        curNode = open.pop(0)
 
-        # found true path
+        # Tìm thấy đường đi
         if curNode == end:
-            for node in true_path[1:]:
-                node.color = YELLOW
-                pygame.time.delay(30)
-                draw()
+            # Xây dựng lại đường đi từ node bắt đầu đến node kết thúc
+            rebuild_path(prevNode, start, end, draw)
             return True
-
-        # visit node
-        if curNode not in visited:
-            visited.append(curNode)
-            true_path.append(curNode)
+        
+        # Đánh dấu node đã đi qua
         if (curNode.color != RED and curNode.color != GREEN):
             curNode.color = AQUA
-            draw()
-
-        # nếu không có neighbor hoặc neighbor đã được duyệt hết thì 
-        # quay lại đỉnh gần nhất còn neighbor chưa được duyệt
-        temp = true_path[-1]
-        while not temp.neighbors or all(neighbor in visited for neighbor in temp.neighbors):
-            true_path.pop()
-            temp = true_path[-1]
-        curNode = temp
-         
-        # add neighbors to stack
-        stack.extend([neighbor for neighbor in curNode.neighbors 
-                    if neighbor not in visited])
-    draw()      
+        # Duyệt qua các node lân cận của node hiện tại
+        for neighbor in curNode.neighbors:
+            if neighbor not in prevNode:
+                prevNode[neighbor] = curNode
+                open.append(neighbor)
+        draw()    
 
 
 # Bắt đầu các thuật toán làm mức 3
@@ -430,6 +415,7 @@ def main(win):
     
     # Add obstacle
     add_obstacle(array, OBSTACLES)
+    add_obstacle(array, OBSTACLES)
     
     for row in array:
         for node in row:
@@ -446,16 +432,19 @@ def main(win):
     
     draw(win, array, rows, columns)
     # a_star_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
-
-    switch = {
-        1: lambda: a_star_algorithm(lambda: draw(win, array, rows, columns), array, start, end),
-        2: lambda: print("Bạn đã chọn: " + input("Chọn một số từ 1 đến 3: ")),
-        3: lambda:level_3(pointList, lambda: draw(win, array, rows, columns), array),
-        4: lambda: greedy_bfs_algorithm(lambda: draw(win, array, rows, columns), array, start, end),
-    }
     
+    switch = {
+        '1': lambda: bfs_algorithm(lambda: draw(win, array, rows, columns), array, start, end),
+        '2': lambda: {
+            '1': lambda: a_star_algorithm(lambda: draw(win, array, rows, columns), array, start, end),
+            '2': lambda: greedy_bfs_algorithm(lambda: draw(win, array, rows, columns), array, start, end),
+            '3': lambda: dijkstra_algorithm(lambda: draw(win, array, rows, columns), array, start, end),
+        }.get(input("Chọn thuật toán: 1. A* 2. Greedy BFS 3. Dijkstra: "), lambda: print("Invalid choice"))(),
+        '3': level_3,
+    }
+
     choice = input("Chọn mức (1, 2 ,3): ")
-    func = switch.get(int(choice), lambda: print("Invalid choice"))
+    func = switch.get(choice, lambda: print("Invalid choice"))
     func()
     
     run = True
