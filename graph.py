@@ -127,6 +127,13 @@ def h(node1, node2):
     y2 = node2.y
     return math.sqrt((x1 - x2)*(x1-x2) + (y1 - y2)*(y1-y2))
 
+def heuristic(node1, node2):
+    x1 = node1.x
+    y1 = node1.y
+    x2 = node2.x
+    y2 = node2.y
+    return abs(x2 - x1) + abs(y2 - y1)
+
 # Hàm vẽ đường ngắn nhất sau khi tìm ra
 def rebuild_path(prevNode, start, end, draw):
     curNode = end
@@ -263,7 +270,8 @@ def greedy_bfs_algorithm(draw, grid, start, end):
         
         # Tìm thấy đường đi
         if curNode == end:
-            rebuild_path(prevNode, start, end, draw)
+            weight = rebuild_path(prevNode, start, end, draw)
+            print("Đường đi tìm được có chiều dài là: ", weight)
             return True
         
         distance_temp = open[curNode]
@@ -271,13 +279,12 @@ def greedy_bfs_algorithm(draw, grid, start, end):
         if (curNode.color != RED and curNode.color != GREEN and curNode.color != PINK):
             curNode.color = AQUA_DARK
             
-        for neighbor in curNode.neighbors or open[neighbor] <= distance_temp:
+        for neighbor in curNode.neighbors:
             if neighbor not in prevNode:
+                open[neighbor] = heuristic(neighbor, end)
                 prevNode[neighbor] = curNode
-                open[neighbor] = h(neighbor, end)
                 if (neighbor.color != RED and neighbor.color != GREEN and neighbor.color != PINK):
                     neighbor.color = AQUA
-        pygame.time.delay(100)
         draw()
 # Thuật toán Dijkstra
 def dijkstra_algorithm(draw, grid, start, end):
@@ -298,7 +305,8 @@ def dijkstra_algorithm(draw, grid, start, end):
         
         # Tìm thấy đường đi
         if curNode == end:
-            rebuild_path(prevNode, start, end, draw)
+            weight = rebuild_path(prevNode, start, end, draw)
+            print("Đường đi tìm được có chiều dài là: ", weight)
             return True
         
         # đi qua node hiện tại
