@@ -263,7 +263,7 @@ def greedy_bfs_algorithm(draw, grid, start, end):
         
         # Tìm thấy đường đi
         if curNode == end:
-            rebuild_path(prevNode, start, end, draw)
+            print(rebuild_path(prevNode, start, end, draw))
             return True
         
         distance_temp = open[curNode]
@@ -277,8 +277,8 @@ def greedy_bfs_algorithm(draw, grid, start, end):
                 open[neighbor] = h(neighbor, end)
                 if (neighbor.color != RED and neighbor.color != GREEN and neighbor.color != PINK):
                     neighbor.color = AQUA
-        pygame.time.delay(100)
         draw()
+        
 # Thuật toán Dijkstra
 def dijkstra_algorithm(draw, grid, start, end):
     passed_nodes = {start: 0}   # lưu các node đã đi qua và khoảng cách đến node bắt đầu
@@ -300,7 +300,7 @@ def dijkstra_algorithm(draw, grid, start, end):
         
         # Tìm thấy đường đi
         if curNode == end:
-            rebuild_path(prevNode, start, end, draw)
+            print(rebuild_path(prevNode, start, end, draw))
             return True
 
         distance_temp = passed_nodes[curNode]
@@ -456,5 +456,5 @@ def main(win):
                 run = False
     pygame.quit()
 
-read_input_file('input.txt')
+read_input_file('input3.txt')
 main(WIN)
