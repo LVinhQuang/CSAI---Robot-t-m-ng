@@ -1,6 +1,5 @@
 def tsp(graph, current, visited, n, count, cost, path, ans, pathAns):
     if count == n-1:
-        print(cost+graph[current][n-1])
         if cost + graph[current][n-1] < ans[0]:
             ans[0] = cost + graph[current][n-1]
             pathAns[:] = path[:]

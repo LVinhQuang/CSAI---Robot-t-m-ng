@@ -127,6 +127,7 @@ def h(node1, node2):
     y2 = node2.y
     return math.sqrt((x1 - x2)*(x1-x2) + (y1 - y2)*(y1-y2))
 
+# Manhattan method
 def heuristic(node1, node2):
     x1 = node1.x
     y1 = node1.y
@@ -222,11 +223,10 @@ def a_star_algorithm(draw, grid, start, end):
         draw()
 
 # Thuật toán Greedy BFS
-def greedy_bfs_algorithm_level_3(start, end):
-    
+def greedy_bfs_algorithm_level_3(start, end, draw):
     open = {}
     prevNode = {}
-    open[start] = h(start, end)
+    open[start] = heuristic(start, end)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -241,22 +241,21 @@ def greedy_bfs_algorithm_level_3(start, end):
             weight = cal_weight(prevNode, start, end)
             return weight, prevNode
         
-        distance_temp = open[curNode]
         open[curNode] = float('inf')
         if (curNode.color != RED and curNode.color != GREEN and curNode.color != PINK):
             curNode.color = AQUA_DARK
             
-        for neighbor in curNode.neighbors or open[neighbor] <= distance_temp:
+        for neighbor in curNode.neighbors:
             if neighbor not in prevNode:
                 prevNode[neighbor] = curNode
-                open[neighbor] = h(neighbor, end)
+                open[neighbor] = heuristic(neighbor, end)
+        draw()
 
 # Thuật toán Greedy BFS (mức 2)
 def greedy_bfs_algorithm(draw, grid, start, end):
-    
     open = {}
     prevNode = {}
-    open[start] = h(start, end)
+    open[start] = heuristic(start, end)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -365,7 +364,7 @@ def bfs_algorithm(draw, grid, start, end):
         draw()   
 
 # Bắt đầu các thuật toán làm mức 3
-def createGraph(pointList):
+def createGraph(pointList, draw):
     weightMatrix = []
     matrix_size = len(pointList)
     prevNode_list = {}
@@ -373,9 +372,10 @@ def createGraph(pointList):
     for i in range(len(pointList)-1):
         weight_array = [0] * matrix_size
         for j in range(i+1, len(pointList)):
+            print("Đang tìm kiếm đường đi từ",i, "->", j)
             startNode = pointList[i]
             endNode = pointList[j]
-            weight, prevNode = greedy_bfs_algorithm_level_3(start=startNode, end=endNode)
+            weight, prevNode = greedy_bfs_algorithm_level_3(start=startNode, end=endNode, draw=draw)
             weight_array[j] = weight
             prevNode_list[(startNode, endNode)] = prevNode
         weightMatrix.append(weight_array)
@@ -402,10 +402,8 @@ def rebuild_advanture(shortest_path, pointList, prevNode_list, draw):
             
         startNode = pointList[indexOfStartNode]
         endNode = pointList[indexOfEndNode]
-        
         prevNode = prevNode_list[(startNode, endNode)]
         rebuild_path(prevNode, startNode, endNode, draw)
-        pygame.time.delay(1000)
 
 def level_3(pointList, draw, grid):
     # Styling
@@ -414,9 +412,10 @@ def level_3(pointList, draw, grid):
     for i in range(1, len(pointList)-1):
         pointList[i].color = PINK  
 
-    weightMatrix, prevNode_list = createGraph(pointList)
+    weightMatrix, prevNode_list = createGraph(pointList, draw)
     shortest_path_length, shortest_path = find_shortest_path_in_weighted_graph(weightMatrix)
-    print("(stp, stpl):", shortest_path, shortest_path_length)
+    print("Trọng số đường đi ngắn nhất:", shortest_path_length)
+    print("Thứ tự index của các đỉnh đi qua:", shortest_path)
     rebuild_advanture(shortest_path, pointList, prevNode_list, draw)
 
 #Hàm chính
@@ -449,7 +448,6 @@ def main(win):
     flattened_pointList = [item for sublist in pointList for item in (sublist if isinstance(sublist, list) else [sublist])]
     
     draw(win, array, rows, columns)
-    # a_star_algorithm(lambda: draw(win, array, rows, columns), array, start, end)
     
     switch = {
         '1': lambda: bfs_algorithm(lambda: draw(win, array, rows, columns), array, start, end),
