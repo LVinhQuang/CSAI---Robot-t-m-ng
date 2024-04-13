@@ -73,7 +73,7 @@ def read_input_file(file_name):
      
         # số lượng obstacle
         global OBSTACLE_COUNT
-        OBSTACLE_COUNT = int(lines[2])
+        OBSTACLE_COUNT = int(lines[2]) if len(lines) > 2 else 0
 
         # tọa độ các đỉnh của các obstacle
         global OBSTACLES
@@ -281,20 +281,18 @@ def greedy_bfs_algorithm(draw, grid, start, end):
         
 # Thuật toán Dijkstra
 def dijkstra_algorithm(draw, grid, start, end):
-    passed_nodes = {start: 0}   # lưu các node đã đi qua và khoảng cách đến node bắt đầu
+    distance = {start: 0} # lưu khoảng cách từ node bắt đầu đến node hiện tại
     prevNode = {} # lưu node trước đó của mỗi node. VD: prevNode{curNode: preNode}
-    while True:                     
-
-        # Thoát game       
+    while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
 
-        # Tìm node có khoảng cách nhỏ nhất
-        curNode = min(passed_nodes, key=passed_nodes.get)
-
+        # đi tới node có khoảng cách ngắn nhất
+        curNode = min(distance, key=distance.get)
+        
         # Đã duyệt hết tất cả các node mà không tìm thấy đường đi
-        if passed_nodes[curNode] == float('inf'):
+        if distance[curNode] == float('inf'):
             print("Không tìm thấy đường đi")
             return False
         
@@ -302,51 +300,61 @@ def dijkstra_algorithm(draw, grid, start, end):
         if curNode == end:
             print(rebuild_path(prevNode, start, end, draw))
             return True
-
-        distance_temp = passed_nodes[curNode]
-
-        # Đánh dấu node đã đi qua
-        passed_nodes[curNode] = float('inf')
+        
+        # đi qua node hiện tại
+        distance_temp = distance[curNode]
+        distance[curNode] = float('inf')
         if (curNode.color != RED and curNode.color != GREEN):
-            curNode.color = AQUA
-
-        # dijkstra algorithm   
+            curNode.color = AQUA_DARK
+            
+        # Duyệt qua các node lân cận của node hiện tại
         for neighbor in curNode.neighbors:
-            # Nếu neighbor chưa đi qua hoặc khoảng cách mới nhỏ hơn khoảng cách cũ
-            if neighbor not in prevNode or distance_temp + 1 < passed_nodes[neighbor]:
-                # update khoảng cách và prevNode của neighbor
-                passed_nodes[neighbor] = distance_temp + 1
+            # nếu distance[neighbor] < khoảng cách hiện tại
+            if neighbor not in prevNode:
+                # cập nhật khoảng cách và preNode của neighbor
+                distance[neighbor] = distance_temp + 1
                 prevNode[neighbor] = curNode
+                # Đánh dấu node mở rộng
+                if (neighbor.color != RED and neighbor.color != GREEN):
+                    neighbor.color = AQUA
         draw()
 
 def bfs_algorithm(draw, grid, start, end):
-    open = [start] # danh sách các node mở với node bắt đầu
+    queue = [start] # hàng đợi các node cần duyệt
     prevNode = {} # lưu node trước đó của mỗi node. VD: prevNode{curNode: preNode}
     while True:
-        # thoát game
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-
-        # Lấy ra node hiện tại từ danh sách các node mở
-        curNode = open.pop(0)
+        
+        # Đã duyệt hết tất cả các node mà không tìm thấy đường đi
+        if len(queue) == 0:
+            print("Không tìm thấy đường đi")
+            return False
+        
+        # Lấy node đầu tiên trong queue
+        curNode = queue.pop(0)
 
         # Tìm thấy đường đi
         if curNode == end:
-            # Xây dựng lại đường đi từ node bắt đầu đến node kết thúc
             rebuild_path(prevNode, start, end, draw)
             return True
         
-        # Đánh dấu node đã đi qua
+        # Đi qua node hiện tại
         if (curNode.color != RED and curNode.color != GREEN):
-            curNode.color = AQUA
+            curNode.color = AQUA_DARK
+
         # Duyệt qua các node lân cận của node hiện tại
         for neighbor in curNode.neighbors:
+            # nếu neighbor chưa được duyệt
             if neighbor not in prevNode:
+                # cập nhật preNode của neighbor và thêm vào queue
                 prevNode[neighbor] = curNode
-                open.append(neighbor)
-        draw()    
-
+                queue.append(neighbor)
+                # Đánh dấu node mở rộng
+                if (neighbor.color != RED and neighbor.color != GREEN):
+                    neighbor.color = AQUA
+        draw()   
 
 # Bắt đầu các thuật toán làm mức 3
 def createGraph(pointList):
