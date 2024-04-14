@@ -337,7 +337,7 @@ def bfs_algorithm(draw, grid, start, end):
 
         # Tìm thấy đường đi
         if curNode == end:
-            rebuild_path(prevNode, start, end, draw)
+            print(rebuild_path(prevNode, start, end, draw))
             return True
         
         # Đi qua node hiện tại
@@ -464,5 +464,5 @@ def main(win):
                 run = False
     pygame.quit()
 
-read_input_file('input3.txt')
+read_input_file('testcase/input.txt')
 main(WIN)
