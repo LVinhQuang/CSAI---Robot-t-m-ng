@@ -405,6 +405,7 @@ def rebuild_advanture(shortest_path, pointList, prevNode_list, draw):
         endNode = pointList[indexOfEndNode]
         prevNode = prevNode_list[(startNode, endNode)]
         rebuild_path(prevNode, startNode, endNode, draw)
+        pygame.time.delay(1000)
 
 def level_3(pointList, draw, grid):
     # Styling
@@ -471,5 +472,16 @@ def main(win):
                 run = False
     pygame.quit()
 
-read_input_file('testcase/input.txt')
+input_files = {
+    '1': 'testcase/input.txt',
+    '2': 'testcase/input2.txt',
+    '3': 'testcase/input3.txt',
+    '4': 'testcase/nopath.txt'
+}
+
+file_choice = input("Chọn file input: \n1. testcase/input.txt\n2. testcase/input2.txt\n3. testcase/input3.txt\n4. testcase/nopath.txt\n")
+
+input_file = input_files.get(file_choice, lambda: print("Invalid choice"))
+
+read_input_file(input_file)
 main(WIN)

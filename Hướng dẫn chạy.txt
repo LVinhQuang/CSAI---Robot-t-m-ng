@@ -5,9 +5,9 @@
  - pygame
 
 2. Hướng dẫn chạy:
- - Đảm bảo file input.txt đã có trong thư mục làm việc với dữ liệu đầu vào đúng format
- - Chạy file graph.py. Chương trình sẽ thực hiện đọc dữ liệu đầu vào từ file input.txt
- - Khi chạy thành công, cần nhập yêu cầu vào console với 3 lựa chọn:
+ - Chạy file graph.py
+ - Bước đầu cần nhập số vào console để chọn file input cần chạy. File input đã được để sẵn trong folder 'testcase'
+ - Sau khi chọn file input, cần nhập yêu cầu vào console với 3 lựa chọn:
     + nhập số 1: thực hiện mức 1 với thuật toán BFS
     + Nhập số 2: thực hiện mức 2. Tiếp tục yêu cầu nhập vào console để chọn thuật toán chạy:
         + Nhập số 1: thuật toán A*
